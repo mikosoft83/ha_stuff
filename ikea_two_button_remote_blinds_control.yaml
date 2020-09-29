@@ -1,0 +1,51 @@
+- id: 'xyz'
+  alias: 'Control: IKEA Blinds Control'
+  description: ''
+  trigger:
+  - platform: event
+    event_type: zha_event
+    event_data:
+      device_ieee: <insert your IEEE here>
+  condition: []
+  action:
+  - choose:
+    - conditions:
+      - condition: or
+        conditions:
+        - condition: state
+          entity_id: cover.<insert your cover entity here>
+          state: open
+        - condition: state
+          entity_id: cover.<insert your cover entity here>
+          state: closed
+      sequence:
+      - choose:
+        - conditions:
+          - condition: or
+            conditions:
+            - condition: template
+              value_template: '{{ trigger.event.data.command == "on" }}'
+            - condition: template
+              value_template: '{{ trigger.event.data.command == "move_with_on_off"
+                }}'
+          sequence:
+          - service: cover.open_cover
+            data: {}
+            entity_id: cover.<insert your cover entity here>
+        - conditions:
+          - condition: or
+            conditions:
+            - condition: template
+              value_template: '{{ trigger.event.data.command == "off" }}'
+            - condition: template
+              value_template: '{{ trigger.event.data.command == "move" }}'
+          sequence:
+          - service: cover.close_cover
+            data: {}
+            entity_id: cover.<insert your cover entity here>
+        default: []
+    default:
+    - service: cover.stop_cover
+      data: {}
+      entity_id: cover.<insert your cover entity here>
+  mode: restart
